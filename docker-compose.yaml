@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: dropbox_index
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backup_dropbox.sql:/docker-entrypoint-initdb.d/init.sql
+    command: postgres -c 'max_connections=500' -c 'shared_buffers=1GB'
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  worker:
+    build: .
+    restart: always
+    depends_on:
+      - db
+      - redis
+    deploy:
+      mode: replicated
+      replicas: 12
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/dropbox_index
+      - REDIS_URL=redis://redis:6379/0
+      - MODE=PRODUCER
+      - API_SECRET_KEY=930xY0dJ0pD
+    command: python -m app.main_local
+
+volumes:
+  postgres_data:
+  redis_data:

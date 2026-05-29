@@ -1,0 +1,61 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: dropbox-indexer-worker
+  labels:
+    cloud.googleapis.com/location: us-central1
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        # Conexión SQL
+        run.googleapis.com/cloudsql-instances: ortega-473114:us-central1:dropbox-indexer
+        # Escala a 0 si no hay trabajo
+        autoscaling.knative.dev/minScale: "0"
+        # Límite de seguridad para probar la concurrencia alta
+        autoscaling.knative.dev/maxScale: "5"
+    spec:
+      # --- EL TURBO BOOST ---
+      containerConcurrency: 80 
+      timeoutSeconds: 900
+      serviceAccountName: dropbox-indexer-sa@ortega-473114.iam.gserviceaccount.com
+      containers:
+      # Apuntamos a la v11 que tiene el fix de la base de datos
+      - image: gcr.io/ortega-473114/dropbox-indexer:v18
+        ports:
+        - name: http1
+          containerPort: 8080
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+        
+        # --- CORRECCIÓN DE STARTUP PROBE ---
+        startupProbe:
+          timeoutSeconds: 5      # Espera máx 5s por intento
+          periodSeconds: 10      # Chequea cada 10s
+          failureThreshold: 24   # Intenta 24 veces (Total 240s)
+          tcpSocket:
+            port: 8080
+
+        env:
+        - name: TOKEN_SERVICE_URL
+          value: "https://accesstokendropbox-223080314602.us-central1.run.app"
+        - name: GCP_PROJECT_ID
+          value: "ortega-473114"
+        - name: PUBSUB_TOPIC_NAME
+          value: "dropbox-crawl-tasks"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: dropbox-db-url
+              key: latest
+        - name: API_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dropbox-api-key
+              key: latest

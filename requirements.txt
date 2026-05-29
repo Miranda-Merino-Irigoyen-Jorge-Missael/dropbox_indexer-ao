@@ -1,0 +1,24 @@
+# Core
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Dropbox SDK
+dropbox==11.36.2
+
+# Database
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+greenlet==3.0.3
+# Google Cloud
+google-cloud-pubsub==2.19.0
+
+# HTTP Client
+httpx==0.26.0
+
+# Utils
+python-dotenv==1.0.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+redis>=5.0.0

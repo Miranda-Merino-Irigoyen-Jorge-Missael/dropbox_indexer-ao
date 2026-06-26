@@ -26,6 +26,7 @@ venv/
 env/
 ENV/
 .venv/
+*.csv
 
 # --- Variables de Entorno (¡SEGURIDAD!) ---
 .env
@@ -45,6 +46,23 @@ Thumbs.db
 *.sqlite
 backup_dropbox.sql
 entregable_IT.sql
+
+# --- Credenciales y Tokens ---
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+token.json
+client_secret.json
+client_secrets.json
+auth.json
+
+# --- Testing y Coverage ---
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
 
 # --- Logs ---
 *.log

@@ -6,6 +6,12 @@ from functools import lru_cache
 class Settings(BaseSettings):
     """Application configuration loaded from environment variables."""
 
+    google_sheet_id: str
+    google_sheet_name: str
+    google_credentials_file: str = "credentials.json"
+    dropbox_app_key: str
+    dropbox_app_secret: str
+    dropbox_access_token: str
     # Token Service
     token_service_url: str = "https://accesstokendropbox-223080314602.us-central1.run.app"
     api_secret_key: str = ""
